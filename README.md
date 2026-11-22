@@ -27,6 +27,21 @@ The library has been tested and verified on the following microcontrollers:
 
 ## API Reference
 
+## Configuration & Macros
+
+You can customize the library's resource usage and timing behavior via preprocessor macros before including `avr_thread.h`:
+
+* `TH_MAX` *(default: `9`)* — Maximum number of threads that can be spawned. Adjust this value to match the number of tasks in your application and save SRAM.
+* `TH_STACK_SIZE` *(default: `512`)* — Stack size in bytes allocated for each thread. Each thread requires a **minimum of 256 bytes** to operate reliably (below this threshold, the library may fail due to context/ISR stack usage). The default is set to `512` bytes for extra safety, and you should tune both `TH_STACK_SIZE` and `TH_MAX` based on your microcontroller's available SRAM and task complexity.
+* `TH_SYSTEM_CLOCK32` *(disabled by default)* — Define this macro to switch the system tick counter (`th_tick_t`) from `uint16_t` to `uint32_t` for longer delay and period measurements.
+
+### Time Conversion Macros
+Helper macros are provided in `avr_thread.h` to convert standard time units into system clock ticks (based on `F_CPU` and `TH_TIMER_PRESCALER`):
+
+* `TH_MSEC_TO_TICKS(ms)` — Converts milliseconds to system clock ticks.
+* `TH_SEC_TO_TICKS(s)` — Converts seconds to system clock ticks.
+* `TH_TICKS_TO_SEC(ticks)` — Converts system clock ticks back to seconds.
+
 ### Thread Management & Scheduling
 * `void th_init()` — Initializes the threading subsystem, resets thread tracking variables, and configures Timer2 to generate periodic system clock interrupts.
 * `int8_t th_spawn(th_proc proc)` — Registers a new thread with its own stack and execution context, marking it as runnable. Returns the assigned thread ID, or `-1` if the maximum thread limit (`TH_MAX`) is reached.

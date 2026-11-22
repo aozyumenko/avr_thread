@@ -1,5 +1,5 @@
 /*
- * A simple library for implementing preemptive threads for AVR.
+ *  A simple library for implementing cooperative threads for AVR.
  *
  * (C)2026 St(u)dio of Computer Games
  * Alexander Ozumenko <scg@stdio.ru>
@@ -137,7 +137,11 @@ void period_start(period_t *period, uint32_t ticks)
 void period_start(period_t *period, uint16_t ticks)
 #endif /* TH_SYSTEM_CLOCK32 */
 {
+#ifdef TH_SYSTEM_CLOCK32
     uint32_t system_clock = th_get_system_clock();
+#else
+    uint16_t system_clock = th_get_system_clock();
+#endif /* TH_SYSTEM_CLOCK32 */
     period->start = system_clock;
     period->end = system_clock + ticks;
 }
@@ -151,7 +155,11 @@ void period_start(period_t *period, uint16_t ticks)
  */
 bool period_expired(period_t *period)
 {
+#ifdef TH_SYSTEM_CLOCK32
     uint32_t system_clock = th_get_system_clock();
+#else
+    uint16_t system_clock = th_get_system_clock();
+#endif /* TH_SYSTEM_CLOCK32 */
 
     if (period->end < period->start) {
         if (system_clock < period->start && system_clock >= period->end) {
@@ -268,10 +276,12 @@ void th_sched()
  *
  * @param th_id ID of the thread to wake up.
  */
-void th_wakeup(int th_id)
+void th_wakeup(int8_t th_id)
 {
-    if (ths[th_id].state == TH_STATE_SLEEP) {
-        ths[th_id].state = TH_STATE_RUN;
+    if (th_id >= 0 && th_id < th_last) {
+        if (ths[th_id].state == TH_STATE_SLEEP) {
+            ths[th_id].state = TH_STATE_RUN;
+        }
     }
 }
 
@@ -317,7 +327,7 @@ void th_delay(uint16_t ticks)
  * another context calls `th_wakeup()` for this thread.
  */
 void th_sleep()
-    {
+{
     ths[th_current].state = TH_STATE_SLEEP;
     th_yield();
 }
@@ -334,7 +344,11 @@ uint32_t th_get_system_clock(void)
 uint16_t th_get_system_clock(void)
 #endif /* TH_SYSTEM_CLOCK32 */
 {
+#ifdef TH_SYSTEM_CLOCK32
     uint32_t ret_clock;
+#else
+    uint16_t ret_clock;
+#endif /* TH_SYSTEM_CLOCK32 */
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         ret_clock = m_system_clock;
     }

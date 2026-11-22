@@ -1,5 +1,5 @@
 /*
- * A simple library for implementing preemptive threads for AVR.
+ *  A simple library for implementing cooperative threads for AVR.
  *
  * (C)2026 St(u)dio of Computer Games
  * Alexander Ozumenko <scg@stdio.ru>
@@ -31,14 +31,8 @@
 
 #define TH_TIMER_PRESCALER      (256L * 32)
 
-#ifdef TH_SYSTEM_CLOCK32
 #define TH_MSEC_TO_TICKS(ms)    ((((uint32_t)ms) * (F_CPU / TH_TIMER_PRESCALER)) / 1000)
 #define TH_SEC_TO_TICKS(s)      (((uint32_t)s) * (F_CPU / TH_TIMER_PRESCALER))
-#else
-#define TH_MSEC_TO_TICKS(ms)    (((ms) * (F_CPU / TH_TIMER_PRESCALER)) / 1000)
-#define TH_SEC_TO_TICKS(s)      ((s) * (F_CPU / TH_TIMER_PRESCALER))
-#endif /* TH_SYSTEM_CLOCK32 */
-
 #define TH_TICKS_TO_SEC(ticks)  ((uint32_t)(ticks) * TH_TIMER_PRESCALER / F_CPU)
 
 
@@ -92,7 +86,7 @@ bool period_expired(period_t *period);
 void th_init();
 int8_t th_spawn(th_proc proc);
 void th_sched();
-void th_wakeup(int th_id);
+void th_wakeup(int8_t th_id);
 
 void th_yield();
 #ifdef TH_SYSTEM_CLOCK32
