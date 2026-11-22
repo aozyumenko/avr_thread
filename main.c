@@ -24,7 +24,6 @@ static void task1()
 {
     while(true) {
         printf("%s()\n", __func__);
-        //th_yield();
         th_delay(TH_SEC_TO_TICKS(1));
     }
 }
@@ -35,7 +34,6 @@ static void task2()
     while(true) {
         printf("%s()\n", __func__);
         th_delay(TH_SEC_TO_TICKS(2));
-//        th_yield();
     }
 }
 
@@ -56,12 +54,11 @@ int main(void)
     uart_init();
     stdin = &uart_stream;
     stdout = &uart_stream;
-    printf("DAVR Thread Dbugger, SP=0x%"PRIx16"\n", SP);
 
     th_init();
-    th_spawn(task1, TH_PRIORITY_LOW);
-    th_spawn(task2, TH_PRIORITY_LOW);
-    th_spawn(task3, TH_PRIORITY_HIGH);
+    th_spawn(task1);
+    th_spawn(task2);
+    th_spawn(task3);
 
     DDRA = _BV(0);
     PORTA = 0;
@@ -69,7 +66,6 @@ int main(void)
     sei();
 
     while(1) {
-        //printf("main loop\n");
         th_sched();
     }
 

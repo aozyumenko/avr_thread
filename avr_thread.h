@@ -22,21 +22,21 @@
 /*** Defines */
 
 #ifndef TH_MAX
-#define TH_MAX             		9
+#define TH_MAX                  9
 #endif /* TH_MAX */
 
 #ifndef TH_STACK_SIZE
-#define TH_STACK_SIZE         	512
+#define TH_STACK_SIZE           512
 #endif /* TH_STACK_SIZE */
 
-#define TH_TIMER_PRESCALER    	(256L * 32)
+#define TH_TIMER_PRESCALER      (256L * 32)
 
 #ifdef TH_SYSTEM_CLOCK32
-#define TH_MSEC_TO_TICKS(ms)  	((((uint32_t)ms) * (F_CPU / TH_TIMER_PRESCALER)) / 1000)
-#define TH_SEC_TO_TICKS(s)    	(((uint32_t)s) * (F_CPU / TH_TIMER_PRESCALER))
+#define TH_MSEC_TO_TICKS(ms)    ((((uint32_t)ms) * (F_CPU / TH_TIMER_PRESCALER)) / 1000)
+#define TH_SEC_TO_TICKS(s)      (((uint32_t)s) * (F_CPU / TH_TIMER_PRESCALER))
 #else
-#define TH_MSEC_TO_TICKS(ms)  	(((ms) * (F_CPU / TH_TIMER_PRESCALER)) / 1000)
-#define TH_SEC_TO_TICKS(s)    	((s) * (F_CPU / TH_TIMER_PRESCALER))
+#define TH_MSEC_TO_TICKS(ms)    (((ms) * (F_CPU / TH_TIMER_PRESCALER)) / 1000)
+#define TH_SEC_TO_TICKS(s)      ((s) * (F_CPU / TH_TIMER_PRESCALER))
 #endif /* TH_SYSTEM_CLOCK32 */
 
 #define TH_TICKS_TO_SEC(ticks)  ((uint32_t)(ticks) * TH_TIMER_PRESCALER / F_CPU)

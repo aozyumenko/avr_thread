@@ -31,7 +31,11 @@ static int8_t th_current;                   /* currently scheduled thread */
 
 /*** Implementation */
 
-/* system clock ISR */
+/**
+ * @brief Timer2 overflow interrupt service routine.
+ *
+ * Increments the global system tick counter (`m_system_clock`).
+ */
 ISR(TIMER2_OVF_vect, ISR_NAKED) {
     /* F_system_clock = 16Mhz / (256 * 32) = 1953.125Hz */
 #ifdef TH_SYSTEM_CLOCK32
@@ -90,7 +94,13 @@ ISR(TIMER2_OVF_vect, ISR_NAKED) {
 }
 
 
-/* get next thread for scheduling */
+/**
+ * @brief Selects the next thread to execute.
+ *
+ * Searches the thread table in round-robin order for the next runnable thread.
+ *
+ * @return The ID of the next runnable thread, or -1 if no threads are ready.
+ */
 static __attribute__((noinline)) int8_t get_next_thread()
 {
     int8_t th_next = th_current;
@@ -113,9 +123,14 @@ static __attribute__((noinline)) int8_t get_next_thread()
 
 
 
-/*** Functions for measuring periods */
+/*** Interface functions */
 
-/* period begins */
+/**
+ * @brief Starts a new time measurement period.
+ *
+ * @param period Pointer to the period tracking structure.
+ * @param ticks  Duration of the period in system clock ticks.
+ */
 #ifdef TH_SYSTEM_CLOCK32
 void period_start(period_t *period, uint32_t ticks)
 #else
@@ -128,7 +143,12 @@ void period_start(period_t *period, uint16_t ticks)
 }
 
 
-/* tests whether the period has ended */
+/**
+ * @brief Checks whether a time period has elapsed.
+ *
+ * @param period Pointer to the period tracking structure.
+ * @return `true` if the period has expired, `false` otherwise.
+ */
 bool period_expired(period_t *period)
 {
     uint32_t system_clock = th_get_system_clock();
@@ -144,6 +164,12 @@ bool period_expired(period_t *period)
 }
 
 
+/**
+ * @brief Calculates the remaining ticks in a time period.
+ *
+ * @param period Pointer to the period tracking structure.
+ * @return Number of ticks remaining until expiration, or 0 if already expired.
+ */
 #ifdef TH_SYSTEM_CLOCK32
 uint32_t period_left(period_t *period)
 #else
@@ -158,8 +184,9 @@ uint16_t period_left(period_t *period)
 
 
 
-/*** Interface functions */
-
+/**
+ * @brief Initializes the threading subsystem and system clock.
+ */
 void th_init()
 {
     /* initialize tasks list */
@@ -174,6 +201,15 @@ void th_init()
 }
 
 
+/**
+ * @brief Spawns a new thread.
+ *
+ * Registers a thread function, sets up its execution context and dedicated stack,
+ * and marks it as runnable.
+ *
+ * @param proc Pointer to the thread entry function.
+ * @return Assigned thread ID, or -1 if the maximum thread limit (`TH_MAX`) is reached.
+ */
 int8_t th_spawn(th_proc proc)
 {
     int th_id;
@@ -200,9 +236,11 @@ int8_t th_spawn(th_proc proc)
 }
 
 
-/*
- * Passing control to the next thread.
+/**
+ * @brief Runs one scheduling cycle.
  *
+ * Saves the main execution context and switches control to the next runnable 
+ * thread selected by `get_next_thread()`.
  * This function should be as short as possible, so that no stack space is used
  * for additional variables during its execution. For this very reason, the thread
  * scheduler has been moved to a separate function, `get_next_thread()`, which is
@@ -223,6 +261,13 @@ void th_sched()
 }
 
 
+/**
+ * @brief Wakes up a sleeping thread.
+ *
+ * Transitions the specified thread from `TH_STATE_SLEEP` back to `TH_STATE_RUN`.
+ *
+ * @param th_id ID of the thread to wake up.
+ */
 void th_wakeup(int th_id)
 {
     if (ths[th_id].state == TH_STATE_SLEEP) {
@@ -231,6 +276,12 @@ void th_wakeup(int th_id)
 }
 
 
+/**
+ * @brief Voluntarily yields execution control.
+ *
+ * Saves the current thread's execution context and returns control back to
+ * the main scheduler loop.
+ */
 __attribute__((noinline)) void th_yield()
 {
     if (setjmp(ths[th_current].env) == 0) {
@@ -239,6 +290,14 @@ __attribute__((noinline)) void th_yield()
 }
 
 
+/**
+ * @brief Suspends the current thread for a specified duration.
+ *
+ * Marks the current thread as `TH_STATE_DELAY`, initializes its delay timer, 
+ * and yields execution.
+ *
+ * @param ticks Number of system clock ticks to delay.
+ */
 #ifdef TH_SYSTEM_CLOCK32
 void th_delay(uint32_t ticks)
 #else
@@ -251,13 +310,24 @@ void th_delay(uint16_t ticks)
 }
 
 
+/**
+ * @brief Puts the current thread into an indefinite sleep state.
+ *
+ * Marks the current thread as `TH_STATE_SLEEP` and yields execution until 
+ * another context calls `th_wakeup()` for this thread.
+ */
 void th_sleep()
-{
+    {
     ths[th_current].state = TH_STATE_SLEEP;
     th_yield();
 }
 
 
+/**
+ * @brief Retrieves the current system clock value.
+ *
+ * @return Current system uptime in clock ticks.
+ */
 #ifdef TH_SYSTEM_CLOCK32
 uint32_t th_get_system_clock(void)
 #else
