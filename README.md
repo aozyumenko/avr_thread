@@ -8,7 +8,6 @@ The thread concept greatly simplifies the development of multitasking firmware f
 
 ### Tested Hardware
 The library has been tested and verified on the following microcontrollers:
-* **ATmega16**
 * **ATmega8515**
 * **ATmega1284**
 * **ATmega2560**
