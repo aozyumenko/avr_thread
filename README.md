@@ -27,7 +27,7 @@ The library has been tested and verified on the following microcontrollers:
 
 ## API Reference
 
-## Configuration & Macros
+### Configuration & Macros
 
 You can customize the library's resource usage and timing behavior via preprocessor macros before including `avr_thread.h`:
 
